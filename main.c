@@ -1,0 +1,41 @@
+#include "cJson.c"
+#include "leitor.c"
+
+#define NUM_ARQUIVOS 2
+
+void exibe_linha_json(cJSON *json, int linha){
+    cJSON *primeiro_item = cJSON_GetArrayItem(json, linha);
+    if (primeiro_item != NULL) {
+        char *string_visualizacao = cJSON_Print(primeiro_item); // Gera a string
+        if (string_visualizacao) {
+            printf("\n--- Debug: Linha %d ---\n%s\n\n", linha+1, string_visualizacao);
+            free(string_visualizacao); // Libera a memoria alocada pelo cJSON_Print
+        }
+    }
+}
+
+int main() {
+    char *arquivos[NUM_ARQUIVOS] = {
+        "data/mqtt_senzemo_cx_bg.json",
+        "data/senzemo_cx_bg.json"
+    };
+
+    char *params[NUM_ARQUIVOS] = {
+        "payload",
+        "brute_data"
+    };
+
+    cJSON *json;
+    for (int i = 0; i < NUM_ARQUIVOS; i++) {
+        json = carregar_json(arquivos[i]);
+        if (json) {
+            atualizar_payload(json, params[i]);
+            exibe_linha_json(json, 0); // Exibe a primeira linha do JSON para debug
+            cJSON_Delete(json);
+        } else {
+            printf("Erro ao carregar o arquivo JSON: %s\n", arquivos[i]);
+        }
+    }
+
+    return 0;
+}

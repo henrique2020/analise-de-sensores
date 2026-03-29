@@ -1,0 +1,9 @@
+#Files
+*.o
+*.exe
+
+# Compressed files
+*.zip
+
+# Project files
+*.depend
