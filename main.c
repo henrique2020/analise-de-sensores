@@ -32,8 +32,6 @@ int main() {
             atualizar_payload(json, params[i]);
             exibe_linha_json(json, 0); // Exibe a primeira linha do JSON para debug
             cJSON_Delete(json);
-        } else {
-            printf("Erro ao carregar o arquivo JSON: %s\n", arquivos[i]);
         }
     }
 
