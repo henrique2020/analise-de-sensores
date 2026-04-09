@@ -3,7 +3,7 @@
 
 #include "cJson.h"
 
-// Lê o arquivo bruto e faz o primeiro parse
+// LÃª o arquivo bruto e faz o primeiro parse
 cJSON* carregar_json(const char *caminho);
 
 // Percorre o JSON e onde encontrar "{param}" como string, converte para objeto

@@ -10,7 +10,6 @@ void processar_cidade(cJSON *root, Estatisticas *est, const char *param) {
     // Itera sobre os objetos (seja array ou os filhos do objeto raiz)
     cJSON *it = cJSON_IsArray(root) ? root->child : root->child;
 
-    int count = 0;
     while (it) {
         cJSON *payload = cJSON_GetObjectItem(it, param);
         if (!payload) { it = it->next; continue; }
@@ -32,7 +31,7 @@ void processar_cidade(cJSON *root, Estatisticas *est, const char *param) {
             if (!var_item || !cJSON_IsString(var_item) ||
                 !val_item || !cJSON_IsNumber(val_item) ||
                 !time_item || !cJSON_IsString(time_item)) {
-                continue; // Pula itens inválidos
+                continue; // Pula itens invÃ¡lidos
             }
 
             const char *var = var_item->valuestring;
@@ -61,21 +60,21 @@ void processar_cidade(cJSON *root, Estatisticas *est, const char *param) {
 }
 
 void exibir_tabelas(Estatisticas *cidades, int qtd) {
-    const char *metricas[] = {"TEMPERATURA (°C)", "UMIDADE (%)", "PRESSÃO ATMOSFÉRICA (hPa)"};
+    const char *metricas[] = {"TEMPERATURA (Â°C)", "UMIDADE (%)", "PRESSÃƒO ATMOSFÃ‰RICA (hPa)"};
 
     for (int m = 0; m < 3; m++) {
         printf("\n------------------------------------------------------------\n");
         printf("%s\n", metricas[m]);
         printf("------------------------------------------------------------\n");
         printf("%-20s | %-7s | %-24s | %-7s | %-24s | %-7s\n",
-               "Cidade", "Mínima", "Data/Hora", "Máxima", "Data/Hora", "Média");
+               "Cidade", "MÃ­nima", "Data/Hora", "MÃ¡xima", "Data/Hora", "MÃ©dia");
         printf("------------------------------------------------------------------------------------------------------\n");
 
         for (int i = 0; i < qtd; i++) {
             double min, max, media = 0;
             char *dMin, *dMax;
 
-            // Seleciona os dados baseados na métrica atual do loop
+            // Seleciona os dados baseados na mÃ©trica atual do loop
             if (m == 0) { // Temperatura
                 min = cidades[i].min_temp.valor;
                 max = cidades[i].max_temp.valor;
@@ -92,7 +91,7 @@ void exibir_tabelas(Estatisticas *cidades, int qtd) {
                 if (cidades[i].cont_umid > 0)
                     media = cidades[i].soma_umid / cidades[i].cont_umid;
             }
-            else { // Pressão
+            else { // PressÃ£o
                 min = cidades[i].min_pres.valor;
                 max = cidades[i].max_pres.valor;
                 dMin = cidades[i].min_pres.tempo;
@@ -102,8 +101,8 @@ void exibir_tabelas(Estatisticas *cidades, int qtd) {
             }
 
             // Imprime a linha da cidade formatada
-            // %-20s -> Alinha string à esquerda com 20 espaços
-            // %-7.2f -> Alinha número com 2 casas decimais em 7 espaços
+            // %-20s -> Alinha string Ã  esquerda com 20 espaÃ§os
+            // %-7.2f -> Alinha nÃºmero com 2 casas decimais em 7 espaÃ§os
             printf("%-20s | %-7.2f | %-22s | %-7.2f | %-22s | %-7.2f\n",
                    cidades[i].nome_cidade, min, dMin, max, dMax, media);
         }

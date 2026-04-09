@@ -26,7 +26,7 @@ cJSON* carregar_json(const char *caminho_arquivo) {
     buffer[tamanho] = '\0';
 
     cJSON *json = cJSON_Parse(buffer);
-    free(buffer); // Liberamos o buffer bruto, pois o cJSON cria sua pr�pria estrutura
+    free(buffer); // Liberamos o buffer bruto, pois o cJSON cria sua própria estrutura
 
     if (!json) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -45,7 +45,7 @@ void atualizar_payload(cJSON *root, const char *param) {
     while (it) {
         cJSON *p_str = cJSON_GetObjectItem(it, param);
 
-        // Se o payload for string ele e convertido
+        // Se o payload for string ele é convertido
         if (cJSON_IsString(p_str) && p_str->valuestring != NULL) {
             cJSON *p_obj = cJSON_Parse(p_str->valuestring);
             if (p_obj) {

@@ -10,13 +10,13 @@ void exibe_linha_json(cJSON *json, int linha){
         char *string_visualizacao = cJSON_Print(primeiro_item); // Gera a string
         if (string_visualizacao) {
             printf("\n--- Debug: Linha %d ---\n%s\n\n", linha+1, string_visualizacao);
-            free(string_visualizacao); // Libera a memoria alocada pelo cJSON_Print
+            free(string_visualizacao); // Libera a memória alocada pelo cJSON_Print
         }
     }
 }
 
 int main() {
-    system("chcp 1252 > nul");
+    system("chcp 65001 > nul");
 
     Estatisticas cidades[NUM_ARQUIVOS] = {0};
 
