@@ -1,5 +1,6 @@
 #include "cJson.c"
 #include "leitor.c"
+#include "processador.c"
 
 #define NUM_ARQUIVOS 2
 
@@ -15,6 +16,10 @@ void exibe_linha_json(cJSON *json, int linha){
 }
 
 int main() {
+    system("chcp 1252 > nul");
+
+    Estatisticas cidades[NUM_ARQUIVOS] = {0};
+
     char *arquivos[NUM_ARQUIVOS] = {
         "data/mqtt_senzemo_cx_bg.json",
         "data/senzemo_cx_bg.json"
@@ -30,10 +35,13 @@ int main() {
         json = carregar_json(arquivos[i]);
         if (json) {
             atualizar_payload(json, params[i]);
-            exibe_linha_json(json, 0); // Exibe a primeira linha do JSON para debug
+            //exibe_linha_json(json, 0); // Exibe a primeira linha do JSON para debug
+            processar_cidade(json, &cidades[i], params[i]);
             cJSON_Delete(json);
         }
     }
+
+    exibir_tabelas(cidades, NUM_ARQUIVOS);
 
     return 0;
 }
