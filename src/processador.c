@@ -102,8 +102,8 @@ void exibir_tabelas(Estatisticas *cidades, int qtd) {
 
             // Imprime a linha da cidade formatada
             // %-20s -> Alinha string à esquerda com 20 espaços
-            // %-7.2f -> Alinha número com 2 casas decimais em 7 espaços
-            printf("%-20s | %-7.2f | %-22s | %-7.2f | %-22s | %-7.2f\n",
+            // %-6.2f -> Alinha número com 2 casas decimais em 5 espaços
+            printf("%-20s | %-6.2f | %-22s | %-6.2f | %-22s | %-6.2f\n",
                    cidades[i].nome_cidade, min, dMin, max, dMax, media);
         }
     }
