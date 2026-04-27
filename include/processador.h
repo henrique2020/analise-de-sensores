@@ -23,9 +23,13 @@ typedef struct {
     int cont_pres;
 
     Registro max_batt, min_batt;
+
+    int spreading_factors[6];
+    int qtd_sf;
 } Estatisticas;
 
 void processar_cidade(cJSON *root, Estatisticas *est, const char *param);
+void exibir_titulo(const char *titulo);
 void exibir_tabelas(Estatisticas *cidades, int qtd);
 
 #endif
