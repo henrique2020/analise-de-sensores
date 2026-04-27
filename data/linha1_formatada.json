@@ -4,7 +4,7 @@
 		"id":529826,
 		"payload":{
 			"device_id":"67bfa5e2020d2a000aec6673",
-			"device_name":"Caxias - Pra├ºa (S2)",
+			"device_name":"Caxias - Praça (S2)",
 			"data":[
 				{
 					"variable":"temperature",
@@ -54,7 +54,7 @@
 	"senzemo_cx_bg":{
 		"brute_data":{
 			"device_id":"67bfa56d36089a000a3254d5",
-			"device_name":"Bento - Pra├ºa (S3)",
+			"device_name":"Bento - Praça (S3)",
 			"data":[
 				{
 					"variable":"temperature",
@@ -96,3 +96,4 @@
 		"payload_date":"2025-11-04T16:42:45.466488-03:00",
 		"payload_id":6999262
 	}
+}
