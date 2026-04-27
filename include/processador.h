@@ -21,6 +21,8 @@ typedef struct {
     Registro max_pres, min_pres;
     double soma_pres;
     int cont_pres;
+
+    Registro max_batt, min_batt;
 } Estatisticas;
 
 void processar_cidade(cJSON *root, Estatisticas *est, const char *param);

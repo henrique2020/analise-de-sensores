@@ -53,6 +53,10 @@ void processar_cidade(cJSON *root, Estatisticas *est, const char *param) {
                 if (!init || val < est->min_pres.valor) { est->min_pres.valor = val; strcpy(est->min_pres.tempo, time); }
                 est->soma_pres += val; est->cont_pres++;
             }
+            else if (strcmp(var, "batterylevel") == 0) {
+                if (!init || val > est->max_batt.valor) { est->max_batt.valor = val; strcpy(est->max_batt.tempo, time); }
+                if (!init || val < est->min_batt.valor) { est->min_batt.valor = val; strcpy(est->min_batt.tempo, time); }
+            }
         }
         init = 1;
         it = it->next;
@@ -103,9 +107,20 @@ void exibir_tabelas(Estatisticas *cidades, int qtd) {
             // Imprime a linha da cidade formatada
             // %-20s -> Alinha string à esquerda com 20 espaços
             // %-6.2f -> Alinha número com 2 casas decimais em 5 espaços
-            printf("%-20s | %-6.2f | %-22s | %-6.2f | %-22s | %-6.2f\n",
+            printf("%-21s | %-6.2f | %-22s | %-6.2f | %-22s | %-6.2f\n",
                    cidades[i].nome_cidade, min, dMin, max, dMax, media);
         }
     }
     printf("\n");
+
+    printf("\n------------------------------------------------------------\n");
+    printf("%s\n", "BATERIA");
+    printf("------------------------------------------------------------\n");
+    printf("%-20s | %-11s | %-9s | %-11s\n",
+            "Cidade", "Inicial (V)", "Final (V)", "Consumo (V)");
+    printf("------------------------------------------------------------\n");
+    for (int i = 0; i < qtd; i++) {
+        printf("%-21s | %-11.2f | %-9.2f | %-11.2f\n",
+                cidades[i].nome_cidade, cidades[i].max_batt.valor, cidades[i].min_batt.valor, (cidades[i].max_batt.valor - cidades[i].min_batt.valor));
+    }
 }
