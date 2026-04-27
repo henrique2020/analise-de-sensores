@@ -159,6 +159,9 @@ void exibir_tabelas(Estatisticas *cidades, int qtd) {
     printf("\n\n");
 
     exibir_titulo("SPREADING FACTORS (SF)");
+    printf("%-20s | %-50s\n",
+            "Cidade", "SF utilizados");
+    printf("------------------------------------------------------------\n");
     for (int i = 0; i < qtd; i++) {
         printf("%-21s | ", cidades[i].nome_cidade);
         if (cidades[i].qtd_sf > 0) {
