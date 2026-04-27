@@ -1,3 +1,4 @@
+#include <time.h>
 #include "cJson.c"
 #include "leitor.c"
 #include "processador.c"
@@ -16,6 +17,8 @@ void exibe_linha_json(cJSON *json, int linha){
 }
 
 int main() {
+    clock_t inicio = clock();
+
     system("chcp 65001 > nul");
 
     Estatisticas cidades[NUM_ARQUIVOS] = {0};
@@ -42,6 +45,16 @@ int main() {
     }
 
     exibir_tabelas(cidades, NUM_ARQUIVOS);
+
+    clock_t fim = clock();
+    double tempo_execucao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
+
+    exibir_titulo("DESEMPENHO");
+    printf("Tempo total de execução: %.3f segundos\n", tempo_execucao);
+
+    printf("\n\n");
+
+    exibir_titulo("Processamento finalizado com sucesso.");
 
     return 0;
 }
