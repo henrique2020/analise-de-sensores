@@ -16,45 +16,60 @@ void exibe_linha_json(cJSON *json, int linha){
     }
 }
 
+void formatar_data(const char *iso, char *saida) {
+    if(!iso) return;
+    snprintf(saida, 11, "%.2s/%.2s/%.4s", iso + 8, iso + 5, iso);
+}
+
 int main() {
     clock_t inicio = clock();
 
     system("chcp 65001 > nul");
 
-    Estatisticas cidades[NUM_ARQUIVOS] = {0};
-
-    char *arquivos[NUM_ARQUIVOS] = {
-        "data/mqtt_senzemo_cx_bg.json",
-        "data/senzemo_cx_bg.json"
-    };
-
-    char *params[NUM_ARQUIVOS] = {
-        "payload",
-        "brute_data"
+    ESTATISTICAS cidades[NUM_ARQUIVOS] = {0};
+    ARQUIVO arquivos[NUM_ARQUIVOS] = {
+        {"mqtt_senzemo_cx_bg.json", "payload", "created_at", "", "", 0},
+        {"senzemo_cx_bg.json", "brute_data", "payload_date", "", "", 0}
     };
 
     cJSON *json;
     for (int i = 0; i < NUM_ARQUIVOS; i++) {
-        json = carregar_json(arquivos[i]);
+        json = carregar_json(arquivos[i].arquivo);
         if (json) {
-            atualizar_payload(json, params[i]);
+            atualizar_payload(json, arquivos[i].local_payload);
             //exibe_linha_json(json, 0); // Exibe a primeira linha do JSON para debug
-            processar_cidade(json, &cidades[i], params[i]);
+            processar_cidade(json, &cidades[i], &arquivos[i]);
             cJSON_Delete(json);
         }
     }
+
+    exibir_titulo("ANÁLISE DE DADOS DOS SENSORES - CityLivingLab\nProcessamento utilizando pthreads", 1);
+
+    printf("\n\n");
+
+    for (int i = 0; i < NUM_ARQUIVOS; i++) {
+        char min_formatada[11], max_formatada[11];
+        formatar_data(arquivos[i].min_dt, min_formatada);
+        formatar_data(arquivos[i].max_dt, max_formatada);
+
+        printf("Arquivo analisado:              %s\n", arquivos[i].arquivo);
+        printf("Total de registros processados: %d\n", arquivos[i].registros);
+        printf("Período analisado:              %s a %s\n\n", min_formatada, max_formatada);
+    }
+
+    printf("\n");
 
     exibir_tabelas(cidades, NUM_ARQUIVOS);
 
     clock_t fim = clock();
     double tempo_execucao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
 
-    exibir_titulo("DESEMPENHO");
+    exibir_titulo("DESEMPENHO", 0);
     printf("Tempo total de execução: %.3f segundos\n", tempo_execucao);
 
     printf("\n\n");
 
-    exibir_titulo("Processamento finalizado com sucesso.");
+    exibir_titulo("Processamento finalizado com sucesso.", 1);
 
     return 0;
 }

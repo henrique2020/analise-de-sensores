@@ -3,7 +3,7 @@
 #include "processador.h"
 #include "cJson.h"
 
-void adicionar_sf_unico(Estatisticas *est, int sf) {
+void adicionar_sf_unico(ESTATISTICAS *est, int sf) {
     // Verifica se o SF já foi armazenado
     for (int i = 0; i < est->qtd_sf; i++) {
         if (est->spreading_factors[i] == sf) {
@@ -30,7 +30,7 @@ void ordenar_sfs(int *sfs, int qtd) {
     }
 }
 
-void processar_cidade(cJSON *root, Estatisticas *est, const char *param) {
+void processar_cidade(cJSON *root, ESTATISTICAS *est, ARQUIVO *arq) {
     if (!root) return;
     int init = 0;
 
@@ -38,8 +38,19 @@ void processar_cidade(cJSON *root, Estatisticas *est, const char *param) {
     cJSON *it = cJSON_IsArray(root) ? root->child : root->child;
 
     while (it) {
-        cJSON *payload = cJSON_GetObjectItem(it, param);
+        cJSON *payload = cJSON_GetObjectItem(it, arq->local_payload);
         if (!payload) { it = it->next; continue; }
+
+        cJSON *data_envio = cJSON_GetObjectItem(it, arq->local_data);
+        if (data_envio) {
+            if (arq->max_dt[0] == '\0' || strcmp(arq->max_dt, data_envio->valuestring) < 0) {
+                strcpy(arq->max_dt, data_envio->valuestring);
+            }
+
+            if (arq->min_dt[0] == '\0' || strcmp(arq->min_dt, data_envio->valuestring) > 0) {
+                strcpy(arq->min_dt, data_envio->valuestring);
+            }
+        }
 
         // Nome da cidade
         if (est->nome_cidade[0] == '\0') {
@@ -91,23 +102,37 @@ void processar_cidade(cJSON *root, Estatisticas *est, const char *param) {
         }
         init = 1;
         it = it->next;
+        arq->registros++;
     }
 }
 
-void exibir_titulo(const char *titulo){
-    printf("------------------------------------------------------------\n");
-    printf("%s\n", titulo);
-    printf("------------------------------------------------------------\n");
+void exibir_tracejado(int tipo, int tamanho) {
+    char caractere = (tipo == 0) ? '-' : '=';
+    for (int i = 0; i < tamanho; i++) {
+        printf("%c", caractere);
+    }
+    printf("\n");
 }
 
-void exibir_tabelas(Estatisticas *cidades, int qtd) {
+// Sobrecarga simulada para usar valor padrão de 60
+void exibir_tracejado_padrao(int tipo) {
+    exibir_tracejado(tipo, 60);
+}
+
+void exibir_titulo(const char *titulo, int tipo) {
+    exibir_tracejado_padrao(tipo);
+    printf("%s\n", titulo);
+    exibir_tracejado_padrao(tipo);
+}
+
+void exibir_tabelas(ESTATISTICAS *cidades, int qtd) {
     const char *metricas[] = {"TEMPERATURA (°C)", "UMIDADE (%)", "PRESSÃO ATMOSFÉRICA (hPa)"};
 
     for (int m = 0; m < 3; m++) {
-        exibir_titulo(metricas[m]);
+        exibir_titulo(metricas[m], 0);
         printf("%-20s | %-7s | %-24s | %-7s | %-24s | %-7s\n",
                "Cidade", "Mínima", "Data/Hora", "Máxima", "Data/Hora", "Média");
-        printf("------------------------------------------------------------------------------------------------------\n");
+        exibir_tracejado(0, 102);
 
         for (int i = 0; i < qtd; i++) {
             double min, max, media = 0;
@@ -148,20 +173,20 @@ void exibir_tabelas(Estatisticas *cidades, int qtd) {
         printf("\n\n");
     }
 
-    exibir_titulo("BATERIA");
+    exibir_titulo("BATERIA", 0);
     printf("%-20s | %-11s | %-9s | %-11s\n",
             "Cidade", "Inicial (V)", "Final (V)", "Consumo (V)");
-    printf("------------------------------------------------------------\n");
+    exibir_tracejado_padrao(0);
     for (int i = 0; i < qtd; i++) {
         printf("%-21s | %-11.2f | %-9.2f | %-11.2f\n",
                 cidades[i].nome_cidade, cidades[i].max_batt.valor, cidades[i].min_batt.valor, (cidades[i].max_batt.valor - cidades[i].min_batt.valor));
     }
     printf("\n\n");
 
-    exibir_titulo("SPREADING FACTORS (SF)");
+    exibir_titulo("SPREADING FACTORS (SF)", 0);
     printf("%-20s | %-50s\n",
             "Cidade", "SF utilizados");
-    printf("------------------------------------------------------------\n");
+    exibir_tracejado_padrao(0);
     for (int i = 0; i < qtd; i++) {
         printf("%-21s | ", cidades[i].nome_cidade);
         if (cidades[i].qtd_sf > 0) {

@@ -4,7 +4,10 @@
 #include "cJson.h"
 
 cJSON* carregar_json(const char *caminho_arquivo) {
-    FILE *file = fopen(caminho_arquivo, "r");
+    char caminho_completo[256];
+    snprintf(caminho_completo, sizeof(caminho_completo), "data/%s", caminho_arquivo);
+
+    FILE *file = fopen(caminho_completo, "r");
     if (!file) {
         fprintf(stderr, "Erro ao carregar o arquivo %s\n", caminho_arquivo);
         return NULL;

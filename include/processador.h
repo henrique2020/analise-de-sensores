@@ -6,30 +6,40 @@
 typedef struct {
     double valor;
     char tempo[30];
-} Registro;
+} REGISTRO;
 
 typedef struct {
     char nome_cidade[50];
-    Registro max_temp, min_temp;
+    REGISTRO max_temp, min_temp;
     double soma_temp;
     int cont_temp;
 
-    Registro max_umid, min_umid;
+    REGISTRO max_umid, min_umid;
     double soma_umid;
     int cont_umid;
 
-    Registro max_pres, min_pres;
+    REGISTRO max_pres, min_pres;
     double soma_pres;
     int cont_pres;
 
-    Registro max_batt, min_batt;
+    REGISTRO max_batt, min_batt;
 
     int spreading_factors[6];
     int qtd_sf;
-} Estatisticas;
+} ESTATISTICAS;
 
-void processar_cidade(cJSON *root, Estatisticas *est, const char *param);
-void exibir_titulo(const char *titulo);
-void exibir_tabelas(Estatisticas *cidades, int qtd);
+typedef struct {
+    char arquivo[100];
+    char local_payload[100];
+    char local_data[100];
+    char max_dt[50], min_dt[50];
+    int registros;
+} ARQUIVO;
+
+void processar_cidade(cJSON *root, ESTATISTICAS *est, ARQUIVO *arq);
+void exibir_tracejado(int tipo, int tamanho);
+void exibir_tracejado_padrao(int tipo);
+void exibir_titulo(const char *titulo, int tipo);
+void exibir_tabelas(ESTATISTICAS *cidades, int qtd);
 
 #endif
