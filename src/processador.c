@@ -30,9 +30,17 @@ void ordenar_sfs(int *sfs, int qtd) {
     }
 }
 
-void processar_cidade(cJSON *root, ESTATISTICAS *est, ARQUIVO *arq) {
+int encontrar_cidade(ESTATISTICAS cidades[], int num_cidades, const char *nome) {
+    for (int i = 0; i < num_cidades; i++) {
+        if (strcmp(cidades[i].nome_cidade, nome) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQUIVO *arq) {
     if (!root) return;
-    int init = 0;
 
     // Itera sobre os objetos (seja array ou os filhos do objeto raiz)
     cJSON *it = cJSON_IsArray(root) ? root->child : root->child;
@@ -41,21 +49,31 @@ void processar_cidade(cJSON *root, ESTATISTICAS *est, ARQUIVO *arq) {
         cJSON *payload = cJSON_GetObjectItem(it, arq->local_payload);
         if (!payload) { it = it->next; continue; }
 
-        cJSON *data_envio = cJSON_GetObjectItem(it, arq->local_data);
-        if (data_envio) {
-            if (arq->max_dt[0] == '\0' || strcmp(arq->max_dt, data_envio->valuestring) < 0) {
-                strcpy(arq->max_dt, data_envio->valuestring);
-            }
+        // Nome da cidade
+        cJSON *n = cJSON_GetObjectItem(payload, "device_name");
+        if (!n || !cJSON_IsString(n)) { it = it->next; continue; }
+        const char *nome_cidade = n->valuestring;
 
-            if (arq->min_dt[0] == '\0' || strcmp(arq->min_dt, data_envio->valuestring) > 0) {
-                strcpy(arq->min_dt, data_envio->valuestring);
-            }
+        int idx = encontrar_cidade(cidades, *num_cidades, nome_cidade);
+        if (idx == -1) {
+            if (*num_cidades >= 100) { it = it->next; continue; } // Limite de cidades
+            idx = *num_cidades;
+            memset(&cidades[idx], 0, sizeof(ESTATISTICAS));
+            strcpy(cidades[idx].nome_cidade, nome_cidade);
+            (*num_cidades)++;
         }
 
-        // Nome da cidade
-        if (est->nome_cidade[0] == '\0') {
-            cJSON *n = cJSON_GetObjectItem(payload, "device_name");
-            if (n) strcpy(est->nome_cidade, n->valuestring);
+        ESTATISTICAS *est = &cidades[idx];
+
+        cJSON *data_envio = cJSON_GetObjectItem(it, arq->local_data);
+        if (data_envio && cJSON_IsString(data_envio)) {
+            const char *data_str = data_envio->valuestring;
+            if (arq->max_dt[0] == '\0' || strcmp(arq->max_dt, data_str) < 0) {
+                strcpy(arq->max_dt, data_str);
+            }
+            if (arq->min_dt[0] == '\0' || strcmp(arq->min_dt, data_str) > 0) {
+                strcpy(arq->min_dt, data_str);
+            }
         }
 
         cJSON *data_array = cJSON_GetObjectItem(payload, "data");
@@ -77,30 +95,30 @@ void processar_cidade(cJSON *root, ESTATISTICAS *est, ARQUIVO *arq) {
             const char *time = time_item->valuestring;
 
             if (strcmp(var, "temperature") == 0) {
-                if (!init || val > est->max_temp.valor) { est->max_temp.valor = val; strcpy(est->max_temp.tempo, time); }
-                if (!init || val < est->min_temp.valor) { est->min_temp.valor = val; strcpy(est->min_temp.tempo, time); }
+                if (!est->inicializado || val > est->max_temp.valor) { est->max_temp.valor = val; strcpy(est->max_temp.tempo, time); }
+                if (!est->inicializado || val < est->min_temp.valor) { est->min_temp.valor = val; strcpy(est->min_temp.tempo, time); }
                 est->soma_temp += val; est->cont_temp++;
             }
             else if (strcmp(var, "humidity") == 0) {
-                if (!init || val > est->max_umid.valor) { est->max_umid.valor = val; strcpy(est->max_umid.tempo, time); }
-                if (!init || val < est->min_umid.valor) { est->min_umid.valor = val; strcpy(est->min_umid.tempo, time); }
+                if (!est->inicializado || val > est->max_umid.valor) { est->max_umid.valor = val; strcpy(est->max_umid.tempo, time); }
+                if (!est->inicializado || val < est->min_umid.valor) { est->min_umid.valor = val; strcpy(est->min_umid.tempo, time); }
                 est->soma_umid += val; est->cont_umid++;
             }
             else if (strcmp(var, "airpressure") == 0) {
-                if (!init || val > est->max_pres.valor) { est->max_pres.valor = val; strcpy(est->max_pres.tempo, time); }
-                if (!init || val < est->min_pres.valor) { est->min_pres.valor = val; strcpy(est->min_pres.tempo, time); }
+                if (!est->inicializado || val > est->max_pres.valor) { est->max_pres.valor = val; strcpy(est->max_pres.tempo, time); }
+                if (!est->inicializado || val < est->min_pres.valor) { est->min_pres.valor = val; strcpy(est->min_pres.tempo, time); }
                 est->soma_pres += val; est->cont_pres++;
             }
             else if (strcmp(var, "batterylevel") == 0) {
-                if (!init || val > est->max_batt.valor) { est->max_batt.valor = val; strcpy(est->max_batt.tempo, time); }
-                if (!init || val < est->min_batt.valor) { est->min_batt.valor = val; strcpy(est->min_batt.tempo, time); }
+                if (!est->inicializado || val > est->max_batt.valor) { est->max_batt.valor = val; strcpy(est->max_batt.tempo, time); }
+                if (!est->inicializado || val < est->min_batt.valor) { est->min_batt.valor = val; strcpy(est->min_batt.tempo, time); }
             }
             else if (strcmp(var, "lora_spreading_factor") == 0) {
                 int sf = (int)val;
                 adicionar_sf_unico(est, sf);
             }
         }
-        init = 1;
+        est->inicializado = 1;
         it = it->next;
         arq->registros++;
     }
@@ -170,7 +188,7 @@ void exibir_tabelas(ESTATISTICAS *cidades, int qtd) {
             printf("%-21s | %-6.2f | %-22s | %-6.2f | %-22s | %-6.2f\n",
                    cidades[i].nome_cidade, min, dMin, max, dMax, media);
         }
-        printf("\n\n");
+        printf("\n");
     }
 
     exibir_titulo("BATERIA", 0);
@@ -181,7 +199,7 @@ void exibir_tabelas(ESTATISTICAS *cidades, int qtd) {
         printf("%-21s | %-11.2f | %-9.2f | %-11.2f\n",
                 cidades[i].nome_cidade, cidades[i].max_batt.valor, cidades[i].min_batt.valor, (cidades[i].max_batt.valor - cidades[i].min_batt.valor));
     }
-    printf("\n\n");
+    printf("\n");
 
     exibir_titulo("SPREADING FACTORS (SF)", 0);
     printf("%-20s | %-50s\n",
@@ -206,5 +224,5 @@ void exibir_tabelas(ESTATISTICAS *cidades, int qtd) {
         }
         printf("\n");
     }
-    printf("\n\n");
+    printf("\n");
 }

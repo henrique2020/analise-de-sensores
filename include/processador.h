@@ -26,6 +26,8 @@ typedef struct {
 
     int spreading_factors[6];
     int qtd_sf;
+
+    int inicializado;
 } ESTATISTICAS;
 
 typedef struct {
@@ -36,7 +38,7 @@ typedef struct {
     int registros;
 } ARQUIVO;
 
-void processar_cidade(cJSON *root, ESTATISTICAS *est, ARQUIVO *arq);
+void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQUIVO *arq);
 void exibir_tracejado(int tipo, int tamanho);
 void exibir_tracejado_padrao(int tipo);
 void exibir_titulo(const char *titulo, int tipo);

@@ -4,6 +4,7 @@
 #include "processador.c"
 
 #define NUM_ARQUIVOS 2
+#define NUM_CIDADES 10
 
 void exibe_linha_json(cJSON *json, int linha){
     cJSON *primeiro_item = cJSON_GetArrayItem(json, linha);
@@ -26,7 +27,8 @@ int main() {
 
     system("chcp 65001 > nul");
 
-    ESTATISTICAS cidades[NUM_ARQUIVOS] = {0};
+    ESTATISTICAS cidades[NUM_CIDADES] = {0}; // Suporte para até 100 cidades
+    int num_cidades_registradas = 0;
     ARQUIVO arquivos[NUM_ARQUIVOS] = {
         {"mqtt_senzemo_cx_bg.json", "payload", "created_at", "", "", 0},
         {"senzemo_cx_bg.json", "brute_data", "payload_date", "", "", 0}
@@ -38,14 +40,14 @@ int main() {
         if (json) {
             atualizar_payload(json, arquivos[i].local_payload);
             //exibe_linha_json(json, 0); // Exibe a primeira linha do JSON para debug
-            processar_cidade(json, &cidades[i], &arquivos[i]);
+            processar_cidade(json, cidades, &num_cidades_registradas, &arquivos[i]);
             cJSON_Delete(json);
         }
     }
 
     exibir_titulo("ANÁLISE DE DADOS DOS SENSORES - CityLivingLab\nProcessamento utilizando pthreads", 1);
 
-    printf("\n\n");
+    printf("\n");
 
     for (int i = 0; i < NUM_ARQUIVOS; i++) {
         char min_formatada[11], max_formatada[11];
@@ -59,7 +61,7 @@ int main() {
 
     printf("\n");
 
-    exibir_tabelas(cidades, NUM_ARQUIVOS);
+    exibir_tabelas(cidades, num_cidades_registradas);
 
     clock_t fim = clock();
     double tempo_execucao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
