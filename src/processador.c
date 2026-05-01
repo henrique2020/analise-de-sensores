@@ -95,23 +95,27 @@ void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQ
             const char *time = time_item->valuestring;
 
             if (strcmp(var, "temperature") == 0) {
-                if (!est->inicializado || val > est->max_temp.valor) { est->max_temp.valor = val; strcpy(est->max_temp.tempo, time); }
-                if (!est->inicializado || val < est->min_temp.valor) { est->min_temp.valor = val; strcpy(est->min_temp.tempo, time); }
+                if (!est->tem_temp || val > est->max_temp.valor) { est->max_temp.valor = val; strcpy(est->max_temp.tempo, time); }
+                if (!est->tem_temp || val < est->min_temp.valor) { est->min_temp.valor = val; strcpy(est->min_temp.tempo, time); }
                 est->soma_temp += val; est->cont_temp++;
+                est->tem_temp = 1;
             }
             else if (strcmp(var, "humidity") == 0) {
-                if (!est->inicializado || val > est->max_umid.valor) { est->max_umid.valor = val; strcpy(est->max_umid.tempo, time); }
-                if (!est->inicializado || val < est->min_umid.valor) { est->min_umid.valor = val; strcpy(est->min_umid.tempo, time); }
+                if (!est->tem_umid || val > est->max_umid.valor) { est->max_umid.valor = val; strcpy(est->max_umid.tempo, time); }
+                if (!est->tem_umid || val < est->min_umid.valor) { est->min_umid.valor = val; strcpy(est->min_umid.tempo, time); }
                 est->soma_umid += val; est->cont_umid++;
+                est->tem_umid = 1;
             }
             else if (strcmp(var, "airpressure") == 0) {
-                if (!est->inicializado || val > est->max_pres.valor) { est->max_pres.valor = val; strcpy(est->max_pres.tempo, time); }
-                if (!est->inicializado || val < est->min_pres.valor) { est->min_pres.valor = val; strcpy(est->min_pres.tempo, time); }
+                if (!est->tem_pres || val > est->max_pres.valor) { est->max_pres.valor = val; strcpy(est->max_pres.tempo, time); }
+                if (!est->tem_pres || val < est->min_pres.valor) { est->min_pres.valor = val; strcpy(est->min_pres.tempo, time); }
                 est->soma_pres += val; est->cont_pres++;
+                est->tem_pres = 1;
             }
             else if (strcmp(var, "batterylevel") == 0) {
-                if (!est->inicializado || val > est->max_batt.valor) { est->max_batt.valor = val; strcpy(est->max_batt.tempo, time); }
-                if (!est->inicializado || val < est->min_batt.valor) { est->min_batt.valor = val; strcpy(est->min_batt.tempo, time); }
+                if (!est->tem_batt || val > est->max_batt.valor) { est->max_batt.valor = val; strcpy(est->max_batt.tempo, time); }
+                if (!est->tem_batt || val < est->min_batt.valor) { est->min_batt.valor = val; strcpy(est->min_batt.tempo, time); }
+                est->tem_batt = 1;
             }
             else if (strcmp(var, "lora_spreading_factor") == 0) {
                 int sf = (int)val;
