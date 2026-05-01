@@ -9,24 +9,19 @@ typedef struct {
 } REGISTRO;
 
 typedef struct {
+    REGISTRO max;
+    REGISTRO min;
+    double soma;
+    int cont;
+    int tem;
+} METRICA;
+
+typedef struct {
     char nome_cidade[50];
-    REGISTRO max_temp, min_temp;
-    double soma_temp;
-    int cont_temp;
-    int tem_temp;
-
-    REGISTRO max_umid, min_umid;
-    double soma_umid;
-    int cont_umid;
-    int tem_umid;
-
-    REGISTRO max_pres, min_pres;
-    double soma_pres;
-    int cont_pres;
-    int tem_pres;
-
-    REGISTRO max_batt, min_batt;
-    int tem_batt;
+    METRICA temperatura;
+    METRICA umidade;
+    METRICA pressao;
+    METRICA bateria;
 
     int spreading_factors[6];
     int qtd_sf;

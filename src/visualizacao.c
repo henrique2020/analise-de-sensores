@@ -33,28 +33,28 @@ void exibir_tabelas(ESTATISTICAS *cidades, int qtd) {
             char *dMin, *dMax;
 
             if (m == 0) {
-                min = cidades[i].min_temp.valor;
-                max = cidades[i].max_temp.valor;
-                dMin = cidades[i].min_temp.tempo;
-                dMax = cidades[i].max_temp.tempo;
-                if (cidades[i].cont_temp > 0)
-                    media = cidades[i].soma_temp / cidades[i].cont_temp;
+                min = cidades[i].temperatura.min.valor;
+                max = cidades[i].temperatura.max.valor;
+                dMin = cidades[i].temperatura.min.tempo;
+                dMax = cidades[i].temperatura.max.tempo;
+                if (cidades[i].temperatura.cont > 0)
+                    media = cidades[i].temperatura.soma / cidades[i].temperatura.cont;
             }
             else if (m == 1) {
-                min = cidades[i].min_umid.valor;
-                max = cidades[i].max_umid.valor;
-                dMin = cidades[i].min_umid.tempo;
-                dMax = cidades[i].max_umid.tempo;
-                if (cidades[i].cont_umid > 0)
-                    media = cidades[i].soma_umid / cidades[i].cont_umid;
+                min = cidades[i].umidade.min.valor;
+                max = cidades[i].umidade.max.valor;
+                dMin = cidades[i].umidade.min.tempo;
+                dMax = cidades[i].umidade.max.tempo;
+                if (cidades[i].umidade.cont > 0)
+                    media = cidades[i].umidade.soma / cidades[i].umidade.cont;
             }
             else {
-                min = cidades[i].min_pres.valor;
-                max = cidades[i].max_pres.valor;
-                dMin = cidades[i].min_pres.tempo;
-                dMax = cidades[i].max_pres.tempo;
-                if (cidades[i].cont_pres > 0)
-                    media = cidades[i].soma_pres / cidades[i].cont_pres;
+                min = cidades[i].pressao.min.valor;
+                max = cidades[i].pressao.max.valor;
+                dMin = cidades[i].pressao.min.tempo;
+                dMax = cidades[i].pressao.max.tempo;
+                if (cidades[i].pressao.cont > 0)
+                    media = cidades[i].pressao.soma / cidades[i].pressao.cont;
             }
 
             printf("%-21s | %-6.2f | %-22s | %-6.2f | %-22s | %-6.2f\n",
@@ -69,7 +69,7 @@ void exibir_tabelas(ESTATISTICAS *cidades, int qtd) {
     exibir_tracejado_padrao(0);
     for (int i = 0; i < qtd; i++) {
         printf("%-21s | %-11.2f | %-9.2f | %-11.2f\n",
-                cidades[i].nome_cidade, cidades[i].max_batt.valor, cidades[i].min_batt.valor, (cidades[i].max_batt.valor - cidades[i].min_batt.valor));
+                cidades[i].nome_cidade, cidades[i].bateria.max.valor, cidades[i].bateria.min.valor, (cidades[i].bateria.max.valor - cidades[i].bateria.min.valor));
     }
     printf("\n");
 
