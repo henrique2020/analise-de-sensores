@@ -39,9 +39,5 @@ typedef struct {
 } ARQUIVO;
 
 void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQUIVO *arq);
-void exibir_tracejado(int tipo, int tamanho);
-void exibir_tracejado_padrao(int tipo);
-void exibir_titulo(const char *titulo, int tipo);
-void exibir_tabelas(ESTATISTICAS *cidades, int qtd);
 
 #endif

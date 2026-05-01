@@ -2,6 +2,7 @@
 #include "cJson.c"
 #include "leitor.c"
 #include "processador.c"
+#include "visualizacao.c"
 
 #define NUM_ARQUIVOS 2
 #define NUM_CIDADES 10
