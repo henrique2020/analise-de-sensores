@@ -1,10 +1,17 @@
-#Files
+# Binários compilados
+analise-de-sensores
 *.o
 *.exe
 
-# Compressed files
-*.zip
+# Arquivos de log gerados em runtime
+*.log
 
-# Project files
+# Dados de entrada (são grandes e devem ser baixados separadamente)
+data/*.json
+
+# Arquivos do Code::Blocks
 *.depend
 *.layout
+
+# Arquivos compactados
+*.zip
