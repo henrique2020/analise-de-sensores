@@ -21,7 +21,9 @@ typedef struct {
     METRICA temperatura;
     METRICA umidade;
     METRICA pressao;
-    METRICA bateria;
+
+    REGISTRO bateria_inicial;
+    REGISTRO bateria_final;
 
     int spreading_factors[6];
     int qtd_sf;
@@ -33,10 +35,14 @@ typedef struct {
     char arquivo[100];
     char local_payload[100];
     char local_data[100];
+    char local_id[100];
     char max_dt[50], min_dt[50];
     int registros;
+    int duplicatas;
 } ARQUIVO;
 
 void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQUIVO *arq);
+void dedup_arquivo(cJSON *root, ARQUIVO *arq);
+void ordenar_sfs(int *sfs, int qtd);
 
 #endif
