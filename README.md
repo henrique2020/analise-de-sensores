@@ -126,5 +126,5 @@ de log em `processamento.log` após a execução.
 
 ## Autores
 
-- [Seu nome] - [Sua matrícula]
-- [Nome do colega] - [Matrícula do colega]
+- Fabio Augusto Calgaro
+- Henrique Britz Hahn
