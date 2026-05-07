@@ -1,107 +1,130 @@
-# Descrição
+# Análise de Dados de Sensores - CityLivingLab
 
-O objetivo deste trabalho é, em duplas ou trios, desenvolver um pequeno software em C utilizando pthreads capaz de ler arquivos no formato JSON contendo medições de temperatura, umidade, nível de bateria e pressão atmosférica, coletadas por sensores instalados nas cidades de Caxias do Sul e Bento Gonçalves ao longo do último ano.
+Software em **C** com **pthreads** para análise de medições (temperatura,
+umidade, pressão atmosférica e bateria) coletadas por sensores instalados
+em Caxias do Sul e Bento Gonçalves, parte do projeto
+[CityLivingLab](https://www.citylivinglab.com).
 
-> Ambos os sensores fazem parte de um projeto conduzido pelo grupo de pesquisa [CityLivingLab](https://www.citylivinglab.com "https://www.citylivinglab.com").
+O programa lê arquivos JSON, deduplica registros, calcula estatísticas
+agregadas por cidade e exibe um relatório no terminal, gerando também
+um arquivo de log para auditoria.
 
-# Requisitos
+## Pré-requisitos
 
-1. O programa deve utilizar múltiplas `threads (pthreads)` para separar pelo menos as seguintes etapas do processamento: leitura dos dados, cálculo das estatísticas e registro dos logs.
-2. Ler os arquivos JSON disponível no [Google Drive](https://drive.google.com/file/d/1BkaovTMQS00TYr_LemH9GqtW7rjGJ5vi/view?usp=sharing "https://drive.google.com/file/d/1BkaovTMQS00TYr_LemH9GqtW7rjGJ5vi/view?usp=sharing")
-3. Para cada uma das cidades, identificar e apresentar em tela a maior e a menor temperatura registradas, bem como a(s) data(s) e horário(s) em que essas medições ocorreram.
-4. Para cada uma das cidades, identificar e apresentar em tela a maior e a menor umidade registradas, bem como a(s) data(s) e horário(s) em que essas medições ocorreram.
-5. Para cada uma das cidades, identificar e apresentar em tela a maior e a menor pressão atmosférica registradas, bem como a(s) data(s) e horário(s) em que essas medições ocorreram.
-6. Calcular e apresentar em tela a média de temperatura, umidade e pressão atmosférica do período para cada uma das cidades.
-7. Calcular e apresentar em tela o consumo de bateria em cada uma das cidades, por meio da diferença entre o nível de tensão da bateria no início e no final das medições.
-8. Identificar e apresentar em tela os Spreading Factors (SF) utilizados nas transmissões.
-9. Registrar logs em arquivo durante o processo de execução do programa, de forma que seja possível realizar auditoria e análise do comportamento do código.
-10. Calcular e apresentar em tela o tempo total de execução do programa. Quanto mais rápida a execução, maior será a avaliação desse requisito.
-11. Os resultados deverão ser apresentados em tela conforme template apresentado ao final.
+- Linux (testado em Ubuntu 22.04+)
+- `gcc` (qualquer versão recente com suporte a C99)
+- `make`
+- Suporte a `pthreads` (presente por padrão em qualquer distro Linux)
 
-# Instruções de postagem
+## Estrutura do projeto
 
-- O código-fonte deverá estar disponível em um repositório GitLab/GitHub, contendo informações sobre sua compilação, execução e demains instruções necessárias para seu correto funcionamento.
-- Os resultados devem ser apresentados em um vídeo com duração máxima de 3 minutos, demonstrando o funcionamento do programa e o atendimento de todos os requisitos especificados. Não poderão ser usados recursos para aceleração do vídeo.
+​```
+.
+├── Makefile                    # Build do projeto
+├── main.c                      # Ponto de entrada e orquestração de threads
+├── data/                       # Arquivos JSON de entrada (não versionados)
+│   ├── mqtt_senzemo_cx_bg.json
+│   └── senzemo_cx_bg.json
+├── include/                    # Headers públicos
+│   ├── cJson.h                 # Lib cJSON (parser de JSON)
+│   ├── fila.h                  # Fila genérica thread-safe
+│   ├── leitor.h                # Carga de arquivos JSON
+│   ├── logger.h                # API do logger assíncrono
+│   ├── processador.h           # Tipos e funções de processamento
+│   └── visualizacao.h          # Saída formatada
+└── src/                        # Implementações
+    ├── cJson.c
+    ├── fila.c                  # Fila com mutex + variável de condição
+    ├── leitor.c
+    ├── logger.c                # Thread de log e gravação no arquivo
+    ├── processador.c           # Dedup + cálculo de estatísticas
+    └── visualizacao.c
+​```
+## Como obter os dados
 
-# Critérios de avaliação
+Os arquivos JSON não fazem parte do repositório (são grandes demais).
+Baixe pelo link do enunciado e coloque os dois arquivos dentro da pasta `data/`:
 
-- Publicação do código no GitLab – 0,5 ponto
-- Qualidade do vídeo (clareza, organização e qualidade de áudio e imagem) – 0,5 ponto
-- Atendimento dos requisitos especificados – 6,0 pontos
+- `mqtt_senzemo_cx_bg.json`
+- `senzemo_cx_bg.json`
 
-# Template
+[Link de download dos JSONs](https://drive.google.com/file/d/1BkaovTMQS00TYr_LemH9GqtW7rjGJ5vi/view?usp=sharing)
 
-```plaintext
-============================================================
-ANÁLISE DE DADOS DOS SENSORES - CityLivingLab
-Processamento utilizando pthreads
-============================================================
+## Compilação
 
-Arquivo analisado: sensores_caxias.json
-Total de registros processados: 52.184
-Período analisado: 01/01/2025 a 31/12/2025
+Da raiz do projeto:
 
-Arquivo analisado: sensores_bento.json
-Total de registros processados: 52.184
-Período analisado: 01/01/2025 a 31/12/2025
-
-------------------------------------------------------------
-TEMPERATURA (°C)
-------------------------------------------------------------
-Cidade            | Mínima | Data/Hora             | Máxima | Data/Hora             | Média
------------------------------------------------------------------------------------------------
-Caxias do Sul     | 2.10   | 05/07/2025 06:14:02   | 38.45  | 12/02/2025 15:32:18   | 18.73
-Bento Gonçalves   | 1.85   | 06/07/2025 06:10:44   | 36.90  | 14/02/2025 16:02:11   | 17.95
-
-
-------------------------------------------------------------
-UMIDADE (%)
-------------------------------------------------------------
-Cidade            | Mínima | Data/Hora             | Máxima | Data/Hora             | Média
------------------------------------------------------------------------------------------------
-Caxias do Sul     | 21.30  | 09/01/2025 14:20:10   | 98.40  | 21/06/2025 05:48:03   | 71.22
-Bento Gonçalves   | 24.90  | 10/01/2025 13:58:02   | 97.80  | 22/06/2025 06:02:17   | 69.81
-
-
-------------------------------------------------------------
-PRESSÃO ATMOSFÉRICA (hPa)
-------------------------------------------------------------
-Cidade            | Mínima | Data/Hora             | Máxima | Data/Hora             | Média
------------------------------------------------------------------------------------------------
-Caxias do Sul     | 987.20 | 18/08/2025 03:15:44   | 1024.50| 11/09/2025 11:21:02   | 1007.84
-Bento Gonçalves   | 989.10 | 18/08/2025 03:10:15   | 1023.90| 11/09/2025 11:20:03   | 1008.12
-
-
-------------------------------------------------------------
-BATERIA
-------------------------------------------------------------
-Cidade            | Inicial (V) | Final (V) | Consumo (V)
-------------------------------------------------------------
-Caxias do Sul     | 3.71        | 3.42      | 0.29
-Bento Gonçalves   | 3.69        | 3.51      | 0.18
-
-
-------------------------------------------------------------
-SPREADING FACTORS UTILIZADOS
-------------------------------------------------------------
-Cidade            | SF utilizados
-------------------------------------------------------------
-Caxias do Sul     | SF7, SF8, SF9
-Bento Gonçalves   | SF7, SF8
-
-
-------------------------------------------------------------
-DESEMPENHO
-------------------------------------------------------------
-Tempo total de execução: 0.84 segundos
-Threads utilizadas: 3
- - Thread 1: leitura dos dados
- - Thread 2: cálculo das estatísticas
- - Thread 3: registro de logs
-
-Arquivo de log gerado: processamento.log
-
-============================================================
-Processamento finalizado com sucesso.
-============================================================
+```bash
+make
 ```
+
+Para limpar artefatos de compilação:
+
+```bash
+make clean
+```
+
+## Execução
+
+```bash
+./analise-de-sensores
+```
+
+A saída é exibida diretamente no terminal seguindo o template do enunciado.
+Um arquivo `processamento.log` é gerado na raiz com eventos do processamento.
+
+## Arquitetura
+
+O programa usa **3 threads** (além da thread principal), conforme exigido:
+
+​```
+        ┌──────────────────────┐
+        │  Thread LEITORA      │
+        │  - carrega JSON      │  arquivo 1 ─┐
+        │  - parseia payloads  │             ├─► fila_proc
+        │  - dedup por id      │  arquivo 2 ─┘
+        └──────────┬───────────┘
+                   ▼
+        ┌──────────────────────┐
+        │  Thread ESTATÍSTICAS │
+        │  - min/max/média     │
+        │  - bateria, SFs      │
+        └──────────────────────┘
+
+        ┌──────────────────────┐
+        │  Thread LOGGER       │ ◄── log_msg()
+        │  - escreve no arquivo│     (chamado de qualquer thread)
+        └──────────────────────┘
+​```
+
+    A comunicação entre as threads é feita por uma **fila produtor-consumidor**
+(`mutex` + `pthread_cond`). A leitora produz para a fila enquanto as
+estatísticas consomem em paralelo, dando *pipelining* real entre os
+arquivos. O logger consome de uma fila própria e grava em disco
+de forma assíncrona, sem bloquear as outras threads.
+
+### Decisões de design
+
+- **Deduplicação**: por `id` (em `mqtt_*`) e `payload_id` (em `senzemo_*`),
+  usando uma tabela hash com 65.536 buckets. Itens duplicados são removidos
+  fisicamente da árvore cJSON antes do cálculo de estatísticas.
+- **Bateria**: o consumo é calculado pela diferença entre a primeira e a
+  última leitura **cronológicas** (não max/min absolutos), pois a tensão
+  pode flutuar com temperatura e exposição solar.
+- **Fuso horário**: os timestamps internos do JSON estão em UTC. As datas
+  exibidas e logadas são convertidas para UTC-3 (Brasília).
+- **Medição de tempo**: `clock_gettime(CLOCK_MONOTONIC)` em vez de `clock()`,
+  pois com pthreads o `clock()` somaria o tempo de CPU de todas as threads.
+
+## Saída esperada
+
+Tempo total de execução típico: **~0.6 segundos** (Ubuntu, CPU moderna).
+
+O relatório segue o template do enunciado, com seções para temperatura,
+umidade, pressão, bateria, spreading factors e desempenho. Veja exemplo
+de log em `processamento.log` após a execução.
+
+## Autores
+
+- [Seu nome] - [Sua matrícula]
+- [Nome do colega] - [Matrícula do colega]
