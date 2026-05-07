@@ -1,16 +1,51 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "processador.h"
 #include "cJson.h"
 
+// --- Tabela hash para deduplicacao por id unico ---
+#define DEDUP_BUCKETS 65536
+
+typedef struct NodoDedup {
+    long id;
+    struct NodoDedup *prox;
+} NodoDedup;
+
+static int dedup_check_insert(NodoDedup **buckets, long id) {
+    unsigned k = (unsigned)((unsigned long)id * 2654435761ul) & (DEDUP_BUCKETS - 1);
+    NodoDedup *n = buckets[k];
+    while (n) {
+        if (n->id == id) return 1;
+        n = n->prox;
+    }
+    NodoDedup *novo = malloc(sizeof(NodoDedup));
+    if (!novo) return 0;
+    novo->id = id;
+    novo->prox = buckets[k];
+    buckets[k] = novo;
+    return 0;
+}
+
+static void dedup_free(NodoDedup **buckets) {
+    for (int i = 0; i < DEDUP_BUCKETS; i++) {
+        NodoDedup *n = buckets[i];
+        while (n) {
+            NodoDedup *p = n;
+            n = n->prox;
+            free(p);
+        }
+        buckets[i] = NULL;
+    }
+}
+// --- fim da tabela hash ---
+
 void adicionar_sf_unico(ESTATISTICAS *est, int sf) {
-    // Verifica se o SF já foi armazenado
     for (int i = 0; i < est->qtd_sf; i++) {
         if (est->spreading_factors[i] == sf) {
-            return; // SF já existe
+            return;
         }
     }
-    // Adiciona o novo SF se houver espaço
     if (est->qtd_sf < 6) {
         est->spreading_factors[est->qtd_sf] = sf;
         est->qtd_sf++;
@@ -18,7 +53,6 @@ void adicionar_sf_unico(ESTATISTICAS *est, int sf) {
 }
 
 void ordenar_sfs(int *sfs, int qtd) {
-    // Ordenação por inserção para arrays pequenos
     for (int i = 1; i < qtd; i++) {
         int chave = sfs[i];
         int j = i - 1;
@@ -39,24 +73,49 @@ int encontrar_cidade(ESTATISTICAS cidades[], int num_cidades, const char *nome) 
     return -1;
 }
 
+// Percorre a arvore cJSON e remove fisicamente os nos duplicados pelo id unico.
+void dedup_arquivo(cJSON *root, ARQUIVO *arq) {
+    if (!root) return;
+
+    NodoDedup **dedup = calloc(DEDUP_BUCKETS, sizeof(NodoDedup*));
+    if (!dedup) return;
+
+    cJSON *it = root->child;
+    while (it) {
+        cJSON *prox = it->next;
+
+        cJSON *id_item = cJSON_GetObjectItem(it, arq->local_id);
+        if (id_item && cJSON_IsNumber(id_item)) {
+            long id = (long)id_item->valuedouble;
+            if (dedup_check_insert(dedup, id)) {
+                cJSON_DetachItemViaPointer(root, it);
+                cJSON_Delete(it);
+                arq->duplicatas++;
+            }
+        }
+        it = prox;
+    }
+
+    dedup_free(dedup);
+    free(dedup);
+}
+
 void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQUIVO *arq) {
     if (!root) return;
 
-    // Itera sobre os objetos (seja array ou os filhos do objeto raiz)
     cJSON *it = cJSON_IsArray(root) ? root->child : root->child;
 
     while (it) {
         cJSON *payload = cJSON_GetObjectItem(it, arq->local_payload);
         if (!payload) { it = it->next; continue; }
 
-        // Nome da cidade
         cJSON *n = cJSON_GetObjectItem(payload, "device_name");
         if (!n || !cJSON_IsString(n)) { it = it->next; continue; }
         const char *nome_cidade = n->valuestring;
 
         int idx = encontrar_cidade(cidades, *num_cidades, nome_cidade);
         if (idx == -1) {
-            if (*num_cidades >= 100) { it = it->next; continue; } // Limite de cidades
+            if (*num_cidades >= 100) { it = it->next; continue; }
             idx = *num_cidades;
             memset(&cidades[idx], 0, sizeof(ESTATISTICAS));
             strcpy(cidades[idx].nome_cidade, nome_cidade);
@@ -87,7 +146,7 @@ void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQ
             if (!var_item || !cJSON_IsString(var_item) ||
                 !val_item || !cJSON_IsNumber(val_item) ||
                 !time_item || !cJSON_IsString(time_item)) {
-                continue; // Pula itens inválidos
+                continue;
             }
 
             const char *var = var_item->valuestring;
@@ -134,9 +193,14 @@ void processar_cidade(cJSON *root, ESTATISTICAS cidades[], int *num_cidades, ARQ
                 est->pressao.tem = 1;
             }
             else if (strcmp(var, "batterylevel") == 0) {
-                if (!est->bateria.tem || val > est->bateria.max.valor) { est->bateria.max.valor = val; }
-                if (!est->bateria.tem || val < est->bateria.min.valor) { est->bateria.min.valor = val; }
-                est->bateria.tem = 1;
+                if (est->bateria_inicial.tempo[0] == '\0' || strcmp(time, est->bateria_inicial.tempo) < 0) {
+                    est->bateria_inicial.valor = val;
+                    strcpy(est->bateria_inicial.tempo, time);
+                }
+                if (est->bateria_final.tempo[0] == '\0' || strcmp(time, est->bateria_final.tempo) > 0) {
+                    est->bateria_final.valor = val;
+                    strcpy(est->bateria_final.tempo, time);
+                }
             }
             else if (strcmp(var, "lora_spreading_factor") == 0) {
                 int sf = (int)val;
