@@ -71,8 +71,6 @@ static void *thread_leitora(void *arg) {
         log_msg("LEITORA", "%s parseado", arq->arquivo);
 
         dedup_arquivo(root, arq);
-        log_msg("LEITORA", "dedup concluido em %s: %d duplicatas removidas",
-                arq->arquivo, arq->duplicatas);
 
         ItemProc *item = malloc(sizeof(ItemProc));
         item->root = root;
